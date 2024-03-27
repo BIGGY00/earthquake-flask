@@ -5,4 +5,4 @@ pandas
 matplotlib
 numpy
 nfft
-PIL
+Pillow
