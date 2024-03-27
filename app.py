@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file, jsonify
+from flask import Flask, request, send_file, jsonify, make_response
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')  # Set Matplotlib to use non-GUI backend
@@ -9,6 +9,7 @@ import numpy as np
 import math
 from nfft import nfft
 from flask_cors import CORS
+from PIL import Image
 
 app = Flask(__name__)
 CORS(app)
@@ -110,7 +111,6 @@ def generate_plot_time():
         red_label = f"Year {YearFirst} - {YearEnd}"
         blue_label = f"Year {int(YearBlue)} - {YearEnd}"
 
-
         axs_f.plot(xf[:int(N // 2)], amp[:int(N // 2)], color='red', linewidth=1, label=red_label)
         axs_f.plot(xf[:int(Nh // 2)], amph[:int(Nh // 2)], color='blue', linewidth=1, label=blue_label)
         axs_f.set_xlabel('Frequency')
@@ -119,7 +119,7 @@ def generate_plot_time():
         plt.grid()
         plt.xlim(-1, 58)
         
-        # Save the plots as images
+        # Save the plots as images using PIL
         img_path1 = os.path.join('static', 'images', 'figure1.png')
         img_path2 = os.path.join('static', 'images', 'figure2.png')
 
@@ -130,22 +130,30 @@ def generate_plot_time():
         plt.close(fig)
         plt.close(fig_f)
 
-        # Combine the images into one response
-        # img_combined = BytesIO()
-        # with open(img_path1, 'rb') as f:
-        #     img_combined.write(f.read())
-        # with open(img_path2, 'rb') as f:
-        #     img_combined.write(f.read())
-        # img_combined.seek(0)
+        # Open images with PIL and send them as responses
+        with open(img_path1, 'rb') as img_file1, open(img_path2, 'rb') as img_file2:
+            image1 = Image.open(img_file1)
+            image2 = Image.open(img_file2)
 
-        # Send the combined image as payload
-        print("Plots generated successfully.")
-        return send_file(img_path1, mimetype='image/png')
+            # Convert images to bytes
+            img_bytes1 = BytesIO()
+            image1.save(img_bytes1, format='PNG')
+            img_bytes1.seek(0)
+
+            img_bytes2 = BytesIO()
+            image2.save(img_bytes2, format='PNG')
+            img_bytes2.seek(0)
+
+        response = make_response(img_bytes1)
+        response.headers['Content-Type'] = 'image/png'
+        
+        # Send the first image as response
+        return response
 
     except Exception as e:
         print(f"An error occurred: {e}")
         return jsonify({'error': str(e)}), 500
-    
+
 @app.route('/generate_plot_nfft', methods=['GET'])
 def generate_plot_nfft():
     try:
@@ -224,7 +232,6 @@ def generate_plot_nfft():
         red_label = f"Year {YearFirst} - {YearEnd}"
         blue_label = f"Year {int(YearBlue)} - {YearEnd}"
 
-
         axs_f.plot(xf[:int(N // 2)], amp[:int(N // 2)], color='red', linewidth=1, label=red_label)
         axs_f.plot(xf[:int(Nh // 2)], amph[:int(Nh // 2)], color='blue', linewidth=1, label=blue_label)
         axs_f.set_xlabel('Frequency')
@@ -233,7 +240,7 @@ def generate_plot_nfft():
         plt.grid()
         plt.xlim(-1, 58)
         
-        # Save the plots as images
+        # Save the plots as images using PIL
         img_path1 = os.path.join('static', 'images', 'figure1.png')
         img_path2 = os.path.join('static', 'images', 'figure2.png')
 
@@ -244,17 +251,25 @@ def generate_plot_nfft():
         plt.close(fig)
         plt.close(fig_f)
 
-        # Combine the images into one response
-        # img_combined = BytesIO()
-        # with open(img_path1, 'rb') as f:
-        #     img_combined.write(f.read())
-        # with open(img_path2, 'rb') as f:
-        #     img_combined.write(f.read())
-        # img_combined.seek(0)
+        # Open images with PIL and send them as responses
+        with open(img_path1, 'rb') as img_file1, open(img_path2, 'rb') as img_file2:
+            image1 = Image.open(img_file1)
+            image2 = Image.open(img_file2)
 
-        # Send the combined image as payload
-        print("Plots generated successfully.")
-        return send_file(img_path2, mimetype='image/png')
+            # Convert images to bytes
+            img_bytes1 = BytesIO()
+            image1.save(img_bytes1, format='PNG')
+            img_bytes1.seek(0)
+
+            img_bytes2 = BytesIO()
+            image2.save(img_bytes2, format='PNG')
+            img_bytes2.seek(0)
+
+        response = make_response(img_bytes2)
+        response.headers['Content-Type'] = 'image/png'
+        
+        # Send the first image as response
+        return response
 
     except Exception as e:
         print(f"An error occurred: {e}")
