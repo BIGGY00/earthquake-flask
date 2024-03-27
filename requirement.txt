@@ -1,0 +1,7 @@
+Flask
+Flask-Cors
+Gunicorn
+pandas
+matplotlib
+numpy
+nfft
